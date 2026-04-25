@@ -9,13 +9,13 @@ from typing import List
 # =========================================================================
 WIDTH, HEIGHT = 800, 600
 FPS = 60
-NUM_SQUARES = 20
+NUM_SQUARES = 25
 
 GLOBAL_MAX_SPEED = 150.0 
 FLEE_RADIUS = 150
 CHASE_RADIUS = 200
-FLEE_FORCE = 10.0
-CHASE_FORCE = 5.0
+FLEE_FORCE = 12.0
+CHASE_FORCE = 6.0
 JITTER_STRENGTH = 2.0
 
 def setup_logger() -> logging.Logger:
@@ -39,8 +39,7 @@ class Square:
         )
         self.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
         
-        # Speed logic: Smaller = Faster
-        self.max_speed = GLOBAL_MAX_SPEED * (20 / self.size)
+        self.max_speed = GLOBAL_MAX_SPEED * (25 / self.size)
         self.vx = random.uniform(-self.max_speed, self.max_speed)
         self.vy = random.uniform(-self.max_speed, self.max_speed)
         
@@ -66,16 +65,19 @@ class Square:
             dy = other.rect.centery - self.rect.centery
             dist = math.hypot(dx, dy)
             
-            # Chase and Flee Logic (Vector Addition)
-            if 0 < dist < FLEE_RADIUS and other.size > self.size:
-                # Fleeing (Away from bigger)
+            if dist == 0: continue
+
+            # Fleeing (Small dodges Big)
+            if dist < FLEE_RADIUS and other.size > self.size:
                 strength = (FLEE_RADIUS - dist) / FLEE_RADIUS
                 fx -= (dx / dist) * strength * FLEE_FORCE
+                fy -= (dy / dist) * strength * FLEE_FORCE
             
-            elif 0 < dist < CHASE_RADIUS and other.size < self.size:
-                # Chasing (Toward smaller)
+            # Chasing (Big hunts Small)
+            elif dist < CHASE_RADIUS and other.size < self.size:
                 strength = (CHASE_RADIUS - dist) / CHASE_RADIUS
                 fx += (dx / dist) * strength * CHASE_FORCE
+                fy += (dy / dist) * strength * CHASE_FORCE
 
         self.vx += fx * dt * 100 
         self.vy += fy * dt * 100
@@ -91,18 +93,28 @@ class Square:
         self.rect.x += self.vx * dt
         self.rect.y += self.vy * dt
         
-        # Age update
         self.age += dt
         if self.age >= self.lifetime:
             self.is_dead = True
 
     def bounce(self, logger: logging.Logger) -> None:
-        if self.rect.left <= 0 or self.rect.right >= WIDTH:
+        if self.rect.left <= 0:
+            self.rect.left = 0
             self.vx *= -1
-            logger.info("Horizontal bounce")
-        if self.rect.top <= 0 or self.rect.bottom >= HEIGHT:
+            logger.info("Bounce Left")
+        elif self.rect.right >= WIDTH:
+            self.rect.right = WIDTH
+            self.vx *= -1
+            logger.info("Bounce Right")
+            
+        if self.rect.top <= 0:
+            self.rect.top = 0
             self.vy *= -1
-            logger.info("Vertical bounce")
+            logger.info("Bounce Top")
+        elif self.rect.bottom >= HEIGHT:
+            self.rect.bottom = HEIGHT
+            self.vy *= -1
+            logger.info("Bounce Bottom")
 
     def update(self, others: List['Square'], logger: logging.Logger, dt: float) -> None:
         self.apply_behaviors(others, dt)
@@ -117,25 +129,23 @@ class Square:
 def main() -> None:
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Chase & Flee Simulation - Lab 10")
+    pygame.display.set_caption("Lab 10: Steering and Rebirth")
     
     font = pygame.font.SysFont("Arial", 18)
     clock = pygame.time.Clock()
     logger = setup_logger()
-    logger.info("Simulation started")
 
     squares = [Square() for _ in range(NUM_SQUARES)]
 
     running = True
     while running:
         dt = clock.tick(FPS) / 1000.0 
-        screen.fill((20, 20, 20))
+        screen.fill((25, 25, 35))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Rebirth Logic: Check death during the loop
         for square in squares[:]:
             square.update(squares, logger, dt)
             if square.is_dead:
@@ -144,13 +154,11 @@ def main() -> None:
             else:
                 square.draw(screen)
 
-        # HUD
-        fps_text = font.render(f"FPS: {clock.get_fps():.1f}", True, (255, 255, 255))
+        fps_text = font.render(f"FPS: {clock.get_fps():.1f} | Active Squares: {len(squares)}", True, (200, 200, 200))
         screen.blit(fps_text, (10, 10))
         
         pygame.display.flip()
 
-    logger.info("Simulation ended")
     pygame.quit()
 
 if __name__ == "__main__":
