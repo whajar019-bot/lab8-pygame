@@ -112,3 +112,8 @@ Requirements:
 - **Hook Version**: 1.02
 - **Date**: 27-04-2026 14:36
 - **Prompt**: if my square dies it becomes particles amnd also show its vector
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 27-04-2026 14:37
+- **Prompt**: generate the architecture documents fo rthis project

@@ -29,3 +29,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 27-04-2026 14:36
 - **Prompt**: if my square dies it becomes particles amnd also show its vector
 
+### 27-04-2026 14:37
+- **Prompt**: generate the architecture documents fo rthis project
+
