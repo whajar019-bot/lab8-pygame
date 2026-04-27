@@ -26,3 +26,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 25-04-2026 14:58
 - **Prompt**: Append a new JOURNAL.md entry for the exact user prompt: "regenerate the code explorer site".  Use the template in .github/agents/journal-logger.agent.md and append at end in chronological order. Set: - CoPilot Mode: Agent - CoPilot Model: GPT-5.3-Codex - Socratic Mode: ON - Changes Made: Regenerated code explorer dashboard output and verified root redirect/target files exist. - Context and Reasons for Changes: User asked to regenerate the code explorer site based on current project state.  Use UTF-8 append and post-write integrity check.
 
+### 27-04-2026 14:36
+- **Prompt**: if my square dies it becomes particles amnd also show its vector
+
