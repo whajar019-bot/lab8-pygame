@@ -32,3 +32,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 27-04-2026 14:37
 - **Prompt**: generate the architecture documents fo rthis project
 
+### 04-05-2026 09:43
+- **Prompt**: /init â€˜chat.disableAIFeatures
+
