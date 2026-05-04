@@ -96,8 +96,16 @@ class Boid:
     # Explanation: For each nearby boid, calculate a vector pointing away from it, 
     # inversely proportional to the distance. 
     # Then sum these vectors to get the overall separation steering force.
+    # Separation: steer away from nearby boids to avoid crowding
     def _separation(self, boids: List['Boid']) -> pygame.Vector2:
-        steer : pygame.Vector2 = pygame.Vector2(0, 0)
+        steer = pygame.Vector2(0, 0)
+        
+        for other in boids:
+            dist = math.hypot(self.x - other.x, self.y - other.y)
+            if 0 < dist < config.SEPARATION_DISTANCE:
+                steer.x += self.x - other.x
+                steer.y += self.y - other.y
+                
         return steer
 
     # Alignment: steer toward the average direction of nearby boids: 

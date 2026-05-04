@@ -26,11 +26,10 @@ def setup_logger() -> logging.Logger:
 
 class Square:
     def __init__(self, size: int) -> None:
-        self.original_size = size # Store for respawning[cite: 1]
+        self.original_size = size # Store for respawning
         self.size = size
-        self.target_size = size # Goal for animation[cite: 1]
-        self.growth_timer = 0.0 # Timer for animation[cite: 1]
-        
+        self.target_size = size # Goal for animation
+        self.growth_timer = 0.0 # Timer for animation
         self.rect = pygame.Rect(
             random.randint(0, WIDTH - self.size),
             random.randint(0, HEIGHT - self.size),
@@ -49,7 +48,7 @@ class Square:
         self.trail: List[pygame.Vector2] = []
 
     def grow(self, prey_size: int) -> None:
-        # Ex 9: Set target instead of immediate change[cite: 1]
+        # Ex 9: Set target instead of immediate change
         self.target_size += int(prey_size * 0.2)
         self.growth_timer = 0.0 
 
@@ -120,10 +119,10 @@ class Square:
             self.trail.clear()
 
     def update(self, others: List['Square'], logger: logging.Logger, dt: float) -> None:
-        # Ex 9: Animated Growth Logic[cite: 1]
+        # Ex 9: Animated Growth Logic
         if self.size < self.target_size:
             self.growth_timer += dt
-            progress = min(self.growth_timer / 0.5, 1.0) # 0.5s duration[cite: 1]
+            progress = min(self.growth_timer / 0.5, 1.0) # 0.5s duration
             self.size = int(self.size + (self.target_size - self.size) * progress)
             self.rect.width = self.rect.height = self.size
             self.max_speed = GLOBAL_MAX_SPEED * (25 / self.size)
@@ -172,12 +171,11 @@ def main() -> None:
                 if other is square: continue
                 if check_collision(square, other):
                     if square.size > other.size:
-                        square.grow(other.size) # Ex 6 & 9[cite: 1]
+                        square.grow(other.size)
                         other.is_dead = True
             
             if square.is_dead:
                 squares.remove(square)
-                # Ex 2 & 5: Respawn with ORIGINAL size[cite: 1]
                 squares.append(Square(square.original_size))
             else:
                 square.draw(screen)
