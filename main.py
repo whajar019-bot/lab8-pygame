@@ -61,7 +61,8 @@ class Square:
             dy = other.rect.centery - self.rect.centery
             dist = math.hypot(dx, dy)
             
-            if dist == 0: continue
+            if dist == 0:
+                continue
 
             if dist < FLEE_RADIUS and other.size > self.size:
                 strength = (FLEE_RADIUS - dist) / FLEE_RADIUS
@@ -91,31 +92,23 @@ class Square:
         if self.age >= self.lifetime:
             self.is_dead = True
 
-    def bounce(self, logger: logging.Logger) -> None:
-        if self.rect.left <= 0:
-            self.rect.left = 0
-            self.vx *= -1
-            logger.info("Bounce Left")
-        elif self.rect.right >= WIDTH:
-            self.rect.right = WIDTH
-            self.vx *= -1
-            logger.info("Bounce Right")
-            
-        if self.rect.top <= 0:
-            self.rect.top = 0
-            self.vy *= -1
-            logger.info("Bounce Top")
-        elif self.rect.bottom >= HEIGHT:
-            self.rect.bottom = HEIGHT
-            self.vy *= -1
-            logger.info("Bounce Bottom")
+    def wrap(self) -> None:
+        if self.rect.right < 0:
+            self.rect.left = WIDTH
+        elif self.rect.left > WIDTH:
+            self.rect.right = 0
+
+        if self.rect.bottom < 0:
+            self.rect.top = HEIGHT
+        elif self.rect.top > HEIGHT:
+            self.rect.bottom = 0
 
     def update(self, others: List['Square'], logger: logging.Logger, dt: float) -> None:
         self.apply_behaviors(others, dt)
         self.apply_jitter(dt)
         self.limit_speed()
         self.move(dt)
-        self.bounce(logger)
+        self.wrap()
 
     def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.rect(screen, self.color, self.rect)
