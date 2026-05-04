@@ -44,6 +44,12 @@ class Square:
         self.age = 0.0
         self.is_dead = False
 
+    def grow(self, prey_size: int) -> None:
+        self.size += int(prey_size * 0.2) # Grow by 20% of prey size
+        self.rect.width = self.size
+        self.rect.height = self.size
+        self.max_speed = GLOBAL_MAX_SPEED * (25 / self.size) # Update speed for new size
+
     def apply_jitter(self, dt: float) -> None:
         angle = math.atan2(self.vy, self.vx)
         speed = math.hypot(self.vx, self.vy)
@@ -153,9 +159,11 @@ def main() -> None:
                 if other is square:
                     continue
                 if check_collision(square, other):
-                    # Bigger square eats smaller one
+                    # Exercise 6 mod: Bigger square eats smaller one and grows
                     if square.size > other.size:
+                        square.grow(other.size)
                         other.is_dead = True
+            
             if square.is_dead:
                 squares.remove(square)
                 squares.append(Square(square.size))
