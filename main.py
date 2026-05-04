@@ -148,6 +148,14 @@ def main() -> None:
 
         for square in squares[:]:
             square.update(squares, logger, dt)
+
+            for other in squares:
+                if other is square:
+                    continue
+                if check_collision(square, other):
+                    # Bigger square eats smaller one
+                    if square.size > other.size:
+                        other.is_dead = True
             if square.is_dead:
                 squares.remove(square)
                 squares.append(Square(square.size))
