@@ -153,7 +153,7 @@ def main() -> None:
             square.update(squares, logger, dt)
             if square.is_dead:
                 squares.remove(square)
-                squares.append(Square())
+                squares.append(Square(square.size))
             else:
                 square.draw(screen)
 
