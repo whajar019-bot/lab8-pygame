@@ -43,6 +43,7 @@ class Square:
         self.lifetime = random.uniform(30.0, 180.0)
         self.age = 0.0
         self.is_dead = False
+        self.trail: List[pygame.Vector2] = []
 
     def grow(self, prey_size: int) -> None:
         self.size += int(prey_size * 0.2) # Grow by 20% of prey size
@@ -91,6 +92,10 @@ class Square:
             self.vy *= scale
 
     def move(self, dt: float) -> None:
+        self.trail.append(pygame.Vector2(self.rect.center))
+        if len(self.trail) > 30:
+            self.trail.pop(0)
+
         self.rect.x += self.vx * dt
         self.rect.y += self.vy * dt
         
@@ -99,15 +104,25 @@ class Square:
             self.is_dead = True
 
     def wrap(self) -> None:
+        wrapped = False
         if self.rect.right < 0:
             self.rect.left = WIDTH
+            wrapped = True
         elif self.rect.left > WIDTH:
             self.rect.right = 0
+            wrapped = True
+
 
         if self.rect.bottom < 0:
             self.rect.top = HEIGHT
+            wrapped = True
+
         elif self.rect.top > HEIGHT:
             self.rect.bottom = 0
+            wrapped = True
+
+        if wrapped:
+            self.trail.clear()
 
     def update(self, others: List['Square'], logger: logging.Logger, dt: float) -> None:
         self.apply_behaviors(others, dt)
@@ -117,6 +132,9 @@ class Square:
         self.wrap()
 
     def draw(self, screen: pygame.Surface) -> None:
+        if len(self.trail) > 1:
+            pygame.draw.lines(screen, self.color, False, self.trail, 2)
+        
         pygame.draw.rect(screen, self.color, self.rect)
     
 def check_collision(a: Square, b: Square) -> bool:
