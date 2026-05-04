@@ -81,8 +81,12 @@ class Boid:
 
     # TODO: Implement Random Steering of the velocity vector to create more natural movement
     def _random_steer(self, spread: float = 0.2) -> None:
-        # # Randomly steer a bit to create more natural movement
-        pass
+        # Calculate current angle and speed
+        angle = math.atan2(self.vy, self.vx)
+        speed = math.hypot(self.vx, self.vy)
+        angle += random.uniform(-spread, spread)
+        self.vx = math.cos(angle) * speed
+        self.vy = math.sin(angle) * speed
 
 
     # TODO: Implement the three main boid behaviors: separation, alignment, and cohesion
