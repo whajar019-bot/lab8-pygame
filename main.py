@@ -3,12 +3,14 @@ import random
 import math
 import logging
 from typing import List
+TEST_MODE_ON: bool = False 
+
 
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 NUM_SQUARES = 25
 
-GLOBAL_MAX_SPEED = 150.0 
+GLOBAL_MAX_SPEED = 50.0 
 FLEE_RADIUS = 150
 CHASE_RADIUS = 200
 FLEE_FORCE = 12.0
