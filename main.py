@@ -4,9 +4,6 @@ import math
 import logging
 from typing import List
 
-# =========================================================================
-# CONSTANTS
-# =========================================================================
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 NUM_SQUARES = 25
@@ -29,8 +26,8 @@ def setup_logger() -> logging.Logger:
     return logger
 
 class Square:
-    def __init__(self) -> None:
-        self.size = random.randint(20, 60)
+    def __init__(self, size: int) -> None:
+        self.size = size
         self.rect = pygame.Rect(
             random.randint(0, WIDTH - self.size),
             random.randint(0, HEIGHT - self.size),
@@ -43,7 +40,6 @@ class Square:
         self.vx = random.uniform(-self.max_speed, self.max_speed)
         self.vy = random.uniform(-self.max_speed, self.max_speed)
         
-        # LAB 10: Life Span & Rebirth
         self.lifetime = random.uniform(30.0, 180.0)
         self.age = 0.0
         self.is_dead = False
@@ -67,13 +63,11 @@ class Square:
             
             if dist == 0: continue
 
-            # Fleeing (Small dodges Big)
             if dist < FLEE_RADIUS and other.size > self.size:
                 strength = (FLEE_RADIUS - dist) / FLEE_RADIUS
                 fx -= (dx / dist) * strength * FLEE_FORCE
                 fy -= (dy / dist) * strength * FLEE_FORCE
             
-            # Chasing (Big hunts Small)
             elif dist < CHASE_RADIUS and other.size < self.size:
                 strength = (CHASE_RADIUS - dist) / CHASE_RADIUS
                 fx += (dx / dist) * strength * CHASE_FORCE
@@ -135,7 +129,16 @@ def main() -> None:
     clock = pygame.time.Clock()
     logger = setup_logger()
 
-    squares = [Square() for _ in range(NUM_SQUARES)]
+    squares = []
+
+    for _ in range(5):
+        squares.append(Square(25))
+
+    for _ in range(10):
+        squares.append(Square(10))
+
+    for _ in range(30):
+        squares.append(Square(4))
 
     running = True
     while running:
