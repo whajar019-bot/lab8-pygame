@@ -139,15 +139,54 @@ class Boid:
     # Then divide by the number of nearby boids to get the average position, 
     # and subtract the current boid's position to get the cohesion steering force.
     def _cohesion(self, boids: List['Boid']) -> pygame.Vector2:
-        steer : pygame.Vector2 = pygame.Vector2(0, 0)
-        return steer
+        avg_x = 0
+        avg_y = 0
+        count = 0
+        
+        for other in boids:
+            dist = math.hypot(self.x - other.x, self.y - other.y)
+            if 0 < dist < config.COHESION_DISTANCE:
+                avg_x += other.x
+                avg_y += other.y
+                count += 1
+                
+        if count > 0:
+            avg_x /= count
+            avg_y /= count
+            return pygame.Vector2(avg_x - self.x, avg_y - self.y)
+            
+        return pygame.Vector2(0, 0)
         
 
     # TODO: Use _random_steer, _separation, _alignment and _cohesion in update()
     def update(self, boids: List['Boid'], dt: int) -> None:
+        dt_seconds: float = dt / 1000.0
+
+        if config.SEPARATION_ON:
+            sep = self._separation(boids)
+            self.vx += sep.x * config.SEPARATION_STEER_STRENGTH * dt_seconds
+            self.vy += sep.y * config.SEPARATION_STEER_STRENGTH * dt_seconds
+
+        if config.ALIGNEMENT_ON:
+            ali = self._alignment(boids)
+            self.vx += ali.x * config.ALIGNEMENT_STEER_STRENGTH * dt_seconds
+            self.vy += ali.y * config.ALIGNEMENT_STEER_STRENGTH * dt_seconds
+
+        if config.COHESION_ON:
+            coh = self._cohesion(boids)
+            self.vx += coh.x * config.COHESION_STEER_STRENGTH * dt_seconds
+            self.vy += coh.y * config.COHESION_STEER_STRENGTH * dt_seconds
+
+        self._random_steer()
+        self.x += self.vx * dt_seconds
+        self.y += self.vy * dt_seconds
+
+        if config.WALL_BEHAVIOR == "bounce":
+            self._screen_bounce()
+        else:
+            self._screen_wrap()
         # dt is in milliseconds, convert to seconds for physics calculations, when applying steering forces
         # and the speed which are in pixels per second
-        dt_seconds: float = dt / 1000.0
 
         # TODO: Use _random_steer, _separation, _alignment and _cohesion in update()
         # Explanation: 
@@ -155,16 +194,9 @@ class Boid:
         # Use the flags in the Config class to determine which behaviors are active 
         # and apply the corresponding steering forces to the boid's velocity 
         # using the defined strengths (*_STEER_STRENGTH) for each behavior.
-        if config.ALIGNEMENT_ON:
-            ali = self._alignment(boids)
-            self.vx += ali.x * config.ALIGNEMENT_STEER_STRENGTH * dt_seconds
-            self.vy += ali.y * config.ALIGNEMENT_STEER_STRENGTH * dt_seconds
-        self._random_steer()
+
 
         # Update the boid's position based on its velocity.
-        self.x += self.vx * dt_seconds
-        self.y += self.vy * dt_seconds
-
         # Last, handle wall behavior (bounce or wrap)
         if config.WALL_BEHAVIOR == "bounce":
             self._screen_bounce()
