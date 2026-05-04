@@ -3,19 +3,16 @@ import random
 import math
 import logging
 from typing import List
-TEST_MODE_ON: bool = False 
-
 
 WIDTH, HEIGHT = 800, 600
 FPS = 60
-NUM_SQUARES = 25
-
 GLOBAL_MAX_SPEED = 50.0 
 FLEE_RADIUS = 150
 CHASE_RADIUS = 200
 FLEE_FORCE = 12.0
 CHASE_FORCE = 6.0
 JITTER_STRENGTH = 2.0
+TEST_MODE_ON: bool = False 
 
 def setup_logger() -> logging.Logger:
     logger = logging.getLogger("journal")
@@ -29,7 +26,11 @@ def setup_logger() -> logging.Logger:
 
 class Square:
     def __init__(self, size: int) -> None:
+        self.original_size = size # Store for respawning[cite: 1]
         self.size = size
+        self.target_size = size # Goal for animation[cite: 1]
+        self.growth_timer = 0.0 # Timer for animation[cite: 1]
+        
         self.rect = pygame.Rect(
             random.randint(0, WIDTH - self.size),
             random.randint(0, HEIGHT - self.size),
@@ -48,10 +49,9 @@ class Square:
         self.trail: List[pygame.Vector2] = []
 
     def grow(self, prey_size: int) -> None:
-        self.size += int(prey_size * 0.2) # Grow by 20% of prey size
-        self.rect.width = self.size
-        self.rect.height = self.size
-        self.max_speed = GLOBAL_MAX_SPEED * (25 / self.size) # Update speed for new size
+        # Ex 9: Set target instead of immediate change[cite: 1]
+        self.target_size += int(prey_size * 0.2)
+        self.growth_timer = 0.0 
 
     def apply_jitter(self, dt: float) -> None:
         angle = math.atan2(self.vy, self.vx)
@@ -63,21 +63,17 @@ class Square:
     def apply_behaviors(self, others: List['Square'], dt: float) -> None:
         fx, fy = 0.0, 0.0
         for other in others:
-            if other is self:
-                continue
+            if other is self: continue
             
             dx = other.rect.centerx - self.rect.centerx
             dy = other.rect.centery - self.rect.centery
             dist = math.hypot(dx, dy)
-            
-            if dist == 0:
-                continue
+            if dist == 0: continue
 
             if dist < FLEE_RADIUS and other.size > self.size:
                 strength = (FLEE_RADIUS - dist) / FLEE_RADIUS
                 fx -= (dx / dist) * strength * FLEE_FORCE
                 fy -= (dy / dist) * strength * FLEE_FORCE
-            
             elif dist < CHASE_RADIUS and other.size < self.size:
                 strength = (CHASE_RADIUS - dist) / CHASE_RADIUS
                 fx += (dx / dist) * strength * CHASE_FORCE
@@ -113,12 +109,9 @@ class Square:
         elif self.rect.left > WIDTH:
             self.rect.right = 0
             wrapped = True
-
-
         if self.rect.bottom < 0:
             self.rect.top = HEIGHT
             wrapped = True
-
         elif self.rect.top > HEIGHT:
             self.rect.bottom = 0
             wrapped = True
@@ -127,6 +120,14 @@ class Square:
             self.trail.clear()
 
     def update(self, others: List['Square'], logger: logging.Logger, dt: float) -> None:
+        # Ex 9: Animated Growth Logic[cite: 1]
+        if self.size < self.target_size:
+            self.growth_timer += dt
+            progress = min(self.growth_timer / 0.5, 1.0) # 0.5s duration[cite: 1]
+            self.size = int(self.size + (self.target_size - self.size) * progress)
+            self.rect.width = self.rect.height = self.size
+            self.max_speed = GLOBAL_MAX_SPEED * (25 / self.size)
+
         self.apply_behaviors(others, dt)
         self.apply_jitter(dt)
         self.limit_speed()
@@ -136,11 +137,9 @@ class Square:
     def draw(self, screen: pygame.Surface) -> None:
         if len(self.trail) > 1:
             pygame.draw.lines(screen, self.color, False, self.trail, 2)
-        
         pygame.draw.rect(screen, self.color, self.rect)
-    
+
 def check_collision(a: Square, b: Square) -> bool:
-    # Return True if two squares overlap
     return a.rect.colliderect(b.rect) 
 
 def main() -> None:
@@ -153,15 +152,9 @@ def main() -> None:
     logger = setup_logger()
 
     squares = []
-
-    for _ in range(5):
-        squares.append(Square(25))
-
-    for _ in range(10):
-        squares.append(Square(10))
-
-    for _ in range(30):
-        squares.append(Square(4))
+    for _ in range(5): squares.append(Square(25))
+    for _ in range(10): squares.append(Square(10))
+    for _ in range(30): squares.append(Square(4))
 
     running = True
     while running:
@@ -176,23 +169,21 @@ def main() -> None:
             square.update(squares, logger, dt)
 
             for other in squares:
-                if other is square:
-                    continue
+                if other is square: continue
                 if check_collision(square, other):
-                    # Exercise 6 mod: Bigger square eats smaller one and grows
                     if square.size > other.size:
-                        square.grow(other.size)
+                        square.grow(other.size) # Ex 6 & 9[cite: 1]
                         other.is_dead = True
             
             if square.is_dead:
                 squares.remove(square)
-                squares.append(Square(square.size))
+                # Ex 2 & 5: Respawn with ORIGINAL size[cite: 1]
+                squares.append(Square(square.original_size))
             else:
                 square.draw(screen)
 
-        fps_text = font.render(f"FPS: {clock.get_fps():.1f} | Active Squares: {len(squares)}", True, (200, 200, 200))
+        fps_text = font.render(f"FPS: {clock.get_fps():.1f} | Active: {len(squares)}", True, (200, 200, 200))
         screen.blit(fps_text, (10, 10))
-        
         pygame.display.flip()
 
     pygame.quit()
