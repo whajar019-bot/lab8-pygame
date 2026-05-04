@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true });</script>
+</head>
+<body>
+    <h1>Project Architecture</h1>
+
+    <h2>Module Dependency Graph</h2>
+    <div class="mermaid">
+    graph TD
+        A["main.py"] --> B["pygame"]
+        A --> C["random"]
+        A --> D["math"]
+        A --> E["logging"]
+        A --> F["typing"]
+    </div>
+
+    <h2>High-Level System Flow</h2>
+    <div class="mermaid">
+    graph TD
+        A["Game Initialization"] --> B["Main Game Loop"]
+        B --> C["Handle Events"]
+        B --> D["Update Squares"]
+        B --> E["Draw Squares"]
+        D --> F["Square Death"]
+        F --> G["Emit Particles"]
+    </div>
+
+    <h2>Class Diagram</h2>
+    <div class="mermaid">
+    classDiagram
+        class Square {
+            +int size
+            +Rect rect
+            +tuple color
+            +float max_speed
+            +float vx
+            +float vy
+            +float lifetime
+            +float age
+            +bool is_dead
+            +apply_jitter(float dt)
+            +apply_behaviors(List~Square~ others, float dt)
+            +limit_speed()
+            +move(float dt)
+            +bounce(Logger logger)
+            +update(List~Square~ others, Logger logger, float dt)
+            +draw(Surface screen)
+        }
+
+        class Particle {
+            +float x
+            +float y
+            +float vx
+            +float vy
+            +float lifetime
+            +float age
+            +tuple color
+            +update(float dt)
+            +draw(Surface screen)
+        }
+    </div>
+
+    <h2>Sequence Diagram</h2>
+    <div class="mermaid">
+    sequenceDiagram
+        participant G as "Game Loop"
+        participant S as "Square"
+        participant P as "Particle"
+
+        G->>S: Update
+        S->>S: Check Lifetime
+        alt Square is Dead
+            S->>G: Remove Square
+            G->>P: Emit Particles
+        end
+        G->>S: Draw
+        G->>P: Update
+        G->>P: Draw
+    </div>
+</body>
+</html>
