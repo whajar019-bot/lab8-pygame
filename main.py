@@ -112,6 +112,10 @@ class Square:
 
     def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.rect(screen, self.color, self.rect)
+    
+def check_collision(a: Square, b: Square) -> bool:
+    # Return True if two squares overlap
+    return a.rect.colliderect(b.rect) 
 
 def main() -> None:
     pygame.init()
